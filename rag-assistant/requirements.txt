@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+langchain==0.1.16
+chromadb==0.4.24
+sentence-transformers
+pydantic
+requests
+python-multipartpip uninstall langchain -y
