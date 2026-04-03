@@ -45,8 +45,8 @@ stages {
     stage('Install Dependencies & Run Tests') {
         steps {
             sh '''
-            pip install -r requirements.txt
-            pip install pytest
+            python3 -m pip -r requirements.txt
+            python3 -m pip install pytest
             pytest || true
             '''
         }
