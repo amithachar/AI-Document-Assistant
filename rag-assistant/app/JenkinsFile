@@ -1,0 +1,19 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('git checkout'){
+            steps{
+                git url: 'https://github.com/amithachar/AI-Document-Assistant.git', branch: 'main'
+            }
+        }
+
+        stage('Test'){
+            steps{
+                echo "Running tests..."
+            }
+        }
+
+        stage('')
+    }
+}

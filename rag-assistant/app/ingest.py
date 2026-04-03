@@ -4,14 +4,19 @@ from pypdf import PdfReader
 import io
 
 def process_document(file_bytes):
+    text = ""
+
+    # Try TXT
     try:
         text = file_bytes.decode("utf-8")
     except:
-        # PDF handling
+        # Handle PDF
         pdf = PdfReader(io.BytesIO(file_bytes))
-        text = ""
         for page in pdf.pages:
             text += page.extract_text() or ""
+
+    if not text.strip():
+        return []
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=500,
@@ -19,6 +24,8 @@ def process_document(file_bytes):
     )
 
     chunks = splitter.split_text(text)
+
+    # Store in vector DB
     add_documents(chunks)
 
     return chunks
