@@ -1,7 +1,7 @@
 pipeline {
+    
 agent any
 
-```
 environment {
     IMAGE_NAME = "amithachar/rag-assistant:${GIT_COMMIT}"
     DOCKER_CREDENTIALS = "docker-hub-creds"
