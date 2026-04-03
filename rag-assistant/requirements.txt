@@ -5,4 +5,5 @@ chromadb==0.4.24
 sentence-transformers
 pydantic
 requests
-python-multipartpip
+python-multipart
+pip
