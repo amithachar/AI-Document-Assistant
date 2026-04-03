@@ -19,8 +19,8 @@ stages {
     stage('SAST - Bandit') {
         steps {
             sh '''
-            pip install bandit
-            bandit -r app/ -ll
+            python3 -m pip install bandit
+            python3 -m bandit -r app/ -ll
             '''
         }
     }
@@ -28,8 +28,8 @@ stages {
     stage('Dependency Scan') {
         steps {
             sh '''
-            pip install pip-audit
-            pip-audit
+            python3 -m pip install pip-audit
+            python3 -m pip-audit
             '''
         }
     }
