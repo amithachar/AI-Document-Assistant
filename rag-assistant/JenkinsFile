@@ -28,8 +28,8 @@ stages {
     stage('Dependency Scan') {
         steps {
             sh '''
-            python3 -m pip install pip-audit
-            python3 -m pip-audit
+            python3 -m pip install --user pip-audit
+            python3 -m pip_audit
             '''
         }
     }
