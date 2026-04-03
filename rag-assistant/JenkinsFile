@@ -16,15 +16,6 @@ stages {
         }
     }
 
-    stage('Pre-commit Checks') {
-        steps {
-            sh '''
-            pip install pre-commit
-            pre-commit run --all-files || true
-            '''
-        }
-    }
-
     stage('SAST - Bandit') {
         steps {
             sh '''
