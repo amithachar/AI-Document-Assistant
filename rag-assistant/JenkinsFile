@@ -1,19 +1,135 @@
 pipeline {
-    agent any
+agent any
 
-    stages {
-        stage('git checkout'){
-            steps{
-                git url: 'https://github.com/amithachar/AI-Document-Assistant.git', branch: 'main'
-            }
+```
+environment {
+    IMAGE_NAME = "amithachar/rag-assistant:${GIT_COMMIT}"
+    DOCKER_CREDENTIALS = "dockerhub-creds-id"
+    --GKE_CLUSTER = "your-gke-cluster"
+   -- GKE_ZONE = "us-central1-a"
+    PROJECT_ID = "durable-catbird-450018-j4"
+}
+
+tools {
+    python "python3"
+}
+
+stages {
+
+    stage('Checkout Code') {
+        steps {
+             git url: 'https://github.com/amithachar/AI-Document-Assistant.git', branch: 'main'
         }
-
-        stage('Test'){
-            steps{
-                echo "Running tests..."
-            }
-        }
-
-        stage('')
     }
+
+    stage('Pre-commit Checks') {
+        steps {
+            sh '''
+            pip install pre-commit
+            pre-commit run --all-files || true
+            '''
+        }
+    }
+
+    stage('SAST - Bandit') {
+        steps {
+            sh '''
+            pip install bandit
+            bandit -r app/ -ll
+            '''
+        }
+    }
+
+    stage('Dependency Scan') {
+        steps {
+            sh '''
+            pip install pip-audit
+            pip-audit
+            '''
+        }
+    }
+
+    stage('Secrets Scan - Gitleaks') {
+        steps {
+            sh '''
+            docker run --rm -v $(pwd):/app zricethezav/gitleaks detect --source="/app" || true
+            '''
+        }
+    }
+
+    stage('Install Dependencies & Run Tests') {
+        steps {
+            sh '''
+            pip install -r requirements.txt
+            pip install pytest
+            pytest || true
+            '''
+        }
+    }
+
+    stage('trivy base image scan') {
+		 steps {
+			sh 'bash trivy-docker-image-scan.sh'
+		}
+		}	
+
+	stage('OPA CONFTEST'){
+                    steps{
+                        sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy dockerfile-security.rego Dockerfile' 
+                    }
+                } 
+
+    stage('Docker Image Build') {
+		 steps {
+			sh 'docker build -t ${IMAGE_NAME} .'
+		}	
+      }
+
+	stage('Docker-Login'){
+            steps{
+                script{
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                            sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
+                        }
+                }
+            }
+        }
+
+     stage('Dockehub'){
+            steps{
+               sh 'docker push ${IMAGE_NAME}'
+            }
+        }  
+
+    stage('Deploy to GKE') {
+        steps {
+            sh '''
+            gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+            gcloud container clusters get-credentials $GKE_CLUSTER --zone $GKE_ZONE --project $PROJECT_ID
+            
+            kubectl apply -f k8s/
+            '''
+        }
+    }
+
+    stage('Runtime Monitoring Check') {
+        steps {
+            sh '''
+            kubectl get pods
+            kubectl get svc
+            '''
+        }
+    }
+}
+
+post {
+    success {
+        echo "✅ Pipeline completed successfully!"
+    }
+    failure {
+        echo "❌ Pipeline failed. Check logs."
+    }
+}
+```
+
 }
