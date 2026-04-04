@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: fastapi
-        image: amithachar/rag-assistant:${GIT_COMMIT}
+        image: amithachar/rag-assistant:latest
         ports:
         - containerPort: 8000
 ---
