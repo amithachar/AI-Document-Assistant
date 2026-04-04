@@ -16,7 +16,7 @@ The "local" and "Kubernetes" parts mean it runs entirely on your own servers, sc
 
 
 # 📁 Project Structure Overview
-
+```
 rag-assistant/
 │
 ├── app/
@@ -33,7 +33,7 @@ rag-assistant/
     ├── chromadb-deployment.yaml
     ├── ollama-deployment.yaml
     └── pvc.yaml
-
+```
 
 # 🔄 Step-by-Step How the App Works
 
