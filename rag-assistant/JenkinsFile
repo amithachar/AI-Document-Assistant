@@ -69,7 +69,9 @@ stages {
 
     stage('Build Docker Image') {
         steps {
+            dir('rag-assistant'){
             sh "docker build -t ${IMAGE_NAME} ."
+         }
         }
     }
 
