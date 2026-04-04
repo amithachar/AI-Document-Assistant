@@ -155,6 +155,8 @@ Keeps embeddings safe
 
 ## 🔄 Complete Flow Diagram
 
+```
+
         ┌──────────────┐
         │   User       │
         └──────┬───────┘
@@ -180,6 +182,7 @@ Keeps embeddings safe
 ┌──────────────┐
 │ ingest.py    │
 └──────────────┘
+```
 
 🧠 Simple Real-World Analogy
 
