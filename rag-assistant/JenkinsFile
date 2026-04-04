@@ -55,8 +55,9 @@ stages {
 
     stage('Trivy Image Scan') {
         steps {
-             dir('rag-assistant') {}
-            sh 'bash trivy-docker-image-scan.sh'
+            dir('rag-assistant') {
+                sh 'bash trivy-docker-image-scan.sh'
+             }
         }
     }
 
