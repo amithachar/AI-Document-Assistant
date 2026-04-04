@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: fastapi
-        image: rag-assistant:latest
+        image: kubectl describe pod rag-fastapi-54589978c-wgqqj
         ports:
         - containerPort: 8000
 ---
