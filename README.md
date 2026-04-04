@@ -45,9 +45,11 @@ rag-assistant/
   Load documents (PDF, TXT, etc.)
   Split into chunks (small pieces)
   Send chunks for embedding
+
+  ```
   Example flow:
   docs → split → ["chunk1", "chunk2", ...]
-
+  ```
 
 ## 2️⃣ Embedding Generation (embedder.py)
 
@@ -56,13 +58,16 @@ rag-assistant/
 Why?
 
 Machines can't understand text directly, so we convert it into vectors.
-
+```
 Example:
 "DevOps is important" → [0.23, 0.91, 0.11, ...]
+
+```
+```
 Output:
 Each chunk gets a vector
 Stored in vector DB (ChromaDB)
-
+```
 ## 3️⃣ Vector Storage (ChromaDB - via k8s)
 
 👉 Your chromadb-deployment.yaml runs:
@@ -71,16 +76,19 @@ Vector database
 Stores:
 chunk text
 embeddings
+```
 Example:
 {
   "text": "Kubernetes is...",
   "embedding": [0.12, 0.88, ...]
 }
+```
 
 ## 4️⃣ API Layer (main.py - FastAPI)
 
 👉 This is your entry point
 
+```
 Example endpoint:
 POST /ask
 {
@@ -89,6 +97,7 @@ POST /ask
 What it does:
 Receives user question
 Calls rag.py
+```
 
 ## 5️⃣ RAG Logic (rag.py)
 
@@ -96,14 +105,22 @@ Calls rag.py
 
 Steps:
 🔍 Step 1: Embed the query
+
 "What is Kubernetes?" → vector
+
 🔎 Step 2: Search similar chunks
+
 Query ChromaDB
+
 Find top relevant chunks
+
 🧾 Step 3: Build context
+
 Context:
 "Kubernetes is a container orchestration tool..."
+
 🤖 Step 4: Send to LLM (Ollama)
+
 Combine:
 user question
 retrieved context
