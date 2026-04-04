@@ -63,7 +63,7 @@ stages {
 
     stage('OPA Conftest') {
         steps {
-            sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy dockerfile-security.rego Dockerfile'
+            sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy dockerfile-security.rego rag-assistant/Dockerfile'
         }
     }
 
