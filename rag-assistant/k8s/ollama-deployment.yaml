@@ -15,22 +15,13 @@ spec:
       containers:
       - name: ollama
         image: ollama/ollama:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 11434
-
         resources:
           requests:
-            memory: "2Gi"
-            cpu: "1"
+            cpu: "500m"
+            memory: "1Gi"
           limits:
-            memory: "4Gi"
-            cpu: "2"
-
-        volumeMounts:
-        - mountPath: /root/.ollama
-          name: ollama-storage
-
-      volumes:
-      - name: ollama-storage
-        persistentVolumeClaim:
-          claimName: ollama-pvc
+            cpu: "1"
+            memory: "2Gi"

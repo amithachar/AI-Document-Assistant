@@ -1,30 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rag-fastapi
+  name: chromadb
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: rag-fastapi
+      app: chromadb
   template:
     metadata:
       labels:
-        app: rag-fastapi
+        app: chromadb
     spec:
       containers:
-      - name: fastapi
-        image: amithachar/rag-assistant:latest
+      - name: chromadb
+        image: chromadb/chroma
         ports:
         - containerPort: 8000
-        env:
-        - name: OLLAMA_URL
-          value: "http://ollama-service:11434/api/generate"
-
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
+        volumeMounts:
+        - mountPath: /data
+          name: chroma-storage
+      volumes:
+      - name: chroma-storage
+        persistentVolumeClaim:
+          claimName: chroma-pvc

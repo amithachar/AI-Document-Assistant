@@ -15,16 +15,19 @@ spec:
       containers:
       - name: fastapi
         image: amithachar/rag-assistant:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
-        env:
-        - name: OLLAMA_URL
-          value: "http://ollama-service:11434/api/generate"
-
         resources:
           requests:
+            cpu: "200m"
             memory: "256Mi"
-            cpu: "250m"
           limits:
-            memory: "512Mi"
             cpu: "500m"
+            memory: "512Mi"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
