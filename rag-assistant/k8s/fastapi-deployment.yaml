@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: fastapi
-        image: amithachar/rag-assistant:d8dc467dea14d93a296c04f081b6e2a3ec636346
+        image: amithachar/rag-assistant:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
