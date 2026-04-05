@@ -1,33 +1,43 @@
-# ---------- Stage 1 ----------
+# ---------- Stage 1: Builder ----------
 FROM python:3.10-slim AS builder
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y build-essential curl \
+# Install build dependencies (ONLY here)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy only requirements first (better caching)
 COPY requirements.txt .
-RUN pip install --no-cache-dir --prefer-binary --user -r requirements.txt
 
-# ---------- Stage 2 ----------
+# Install dependencies into a custom folder
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+
+# ---------- Stage 2: Runtime ----------
 FROM python:3.10-slim
 
 WORKDIR /app
 
+# Install only runtime deps (minimal)
 RUN apt-get update && apt-get install -y curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy installed Python packages from builder
+COPY --from=builder /install /usr/local
+
+# Create non-root user
 RUN useradd -m appuser
 
-COPY --from=builder /root/.local /home/appuser/.local
+# Copy application code
 COPY . .
 
-ENV PATH=/home/appuser/.local/bin:$PATH
-
-RUN rm -rf /root/.cache
-
+# Switch to non-root user
 USER appuser
 
 EXPOSE 8000
 
+# Start app
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
