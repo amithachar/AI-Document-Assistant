@@ -14,15 +14,24 @@ spec:
     spec:
       containers:
       - name: ollama
-        image: ollama/ollama
+        image: ollama/ollama:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 11434
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: ollama-service
 spec:
+  type: ClusterIP
   selector:
     app: ollama
   ports:
