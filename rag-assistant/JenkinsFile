@@ -92,12 +92,9 @@ stages {
 
     stage('Push Docker Image') {
         steps {
-            sh '''
-            docker push ${IMAGE_NAME}
-            docker tag ${IMAGE_NAME} amithachar/rag-assistant:latest
-            docker push amithachar/rag-assistant:latest
-            '''
-        }
+            sh "docker push ${IMAGE_NAME}"
+
+        } 
     }
 
     stage('Deploy to GKE') {
