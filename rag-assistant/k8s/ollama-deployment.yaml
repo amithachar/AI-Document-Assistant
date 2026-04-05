@@ -15,25 +15,22 @@ spec:
       containers:
       - name: ollama
         image: ollama/ollama:latest
-        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 11434
+
         resources:
           requests:
-            cpu: "500m"
-            memory: "1Gi"
-          limits:
-            cpu: "1"
             memory: "2Gi"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: ollama-service
-spec:
-  type: ClusterIP
-  selector:
-    app: ollama
-  ports:
-    - port: 11434
-      targetPort: 11434
+            cpu: "1"
+          limits:
+            memory: "4Gi"
+            cpu: "2"
+
+        volumeMounts:
+        - mountPath: /root/.ollama
+          name: ollama-storage
+
+      volumes:
+      - name: ollama-storage
+        persistentVolumeClaim:
+          claimName: ollama-pvc

@@ -6,7 +6,7 @@ environment {
     IMAGE_NAME = "amithachar/rag-assistant:${GIT_COMMIT}"
     DOCKER_CREDENTIALS = "docker-hub-creds"
     PROJECT_ID = "durable-catbird-450018-j4"
-    GKE_ZONE = "us-central1"
+    GKE_ZONE = "us-central1-a"
     GKE_CLUSTER = "cluster-1"
     GOOGLE_APPLICATION_CREDENTIALS = credentials('GCP_SA_KEY')
 }

@@ -1,9 +1,6 @@
 fastapi
 uvicorn
-langchain==0.1.16
-chromadb==0.4.24
-sentence-transformers
-pydantic
+chromadb
 requests
-python-multipart
-pip
+pydantic
+pypdf
