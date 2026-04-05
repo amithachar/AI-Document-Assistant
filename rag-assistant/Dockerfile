@@ -1,30 +1,31 @@
-# ---------- Stage 1: Build ----------
+# ---------- Stage 1 ----------
 FROM python:3.10-slim AS builder
 
 WORKDIR /app
 
-# Install dependencies separately (better caching)
-COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
+RUN apt-get update && apt-get install -y build-essential curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# ---------- Stage 2: Runtime ----------
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefer-binary --user -r requirements.txt
+
+# ---------- Stage 2 ----------
 FROM python:3.10-slim
 
 WORKDIR /app
 
-# Create non-root user
+RUN apt-get update && apt-get install -y curl \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN useradd -m appuser
 
-# Copy installed packages from builder
 COPY --from=builder /root/.local /home/appuser/.local
-
-# Copy app code
 COPY . .
 
-# Set PATH for user-installed packages
 ENV PATH=/home/appuser/.local/bin:$PATH
 
-# Switch to non-root user
+RUN rm -rf /root/.cache
+
 USER appuser
 
 EXPOSE 8000
