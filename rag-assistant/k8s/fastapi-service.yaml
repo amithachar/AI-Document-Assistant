@@ -1,11 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: fastapi-service
+  name: rag-fastapi-service
 spec:
   type: LoadBalancer
   selector:
     app: rag-fastapi
   ports:
-  - port: 80
-    targetPort: 8000
+    - protocol: TCP
+      port: 80
+      targetPort: 8000

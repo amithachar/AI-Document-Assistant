@@ -1,45 +1,65 @@
-import chromadb
-import requests
 import os
-from app.embedder import get_embeddings
+from huggingface_hub import login
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
+import chromadb
 
-# Initialize ChromaDB
-client = chromadb.Client()
-collection = client.get_or_create_collection(name="rag_docs")
+# 🔐 Login to HuggingFace (uses env variable HF_TOKEN)
+hf_token = os.getenv("HF_TOKEN")
+if hf_token:
+    login(token=os.getenv("HF_TOKEN"))
 
-# Ollama URL (local or k8s)
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
+# ⚡ Use smaller model for speed
+MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
 
-# Add documents
-def add_documents(docs):
-    embeddings = get_embeddings(docs)
+# 📦 Load tokenizer & model
+print("Loading model...")
 
-    for i, doc in enumerate(docs):
-        collection.add(
-            documents=[doc],
-            embeddings=[embeddings[i]],
-            ids=[f"id_{i}_{hash(doc)}"]
-        )
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
-# RAG function
-def ask_rag(query: str):
+model = AutoModelForCausalLM.from_pretrained(
+    MODEL_NAME,
+    dtype=torch.float32   # ✅ fixed warning
+)
+
+model = model.to("cpu")
+
+print("Model loaded successfully!")
+
+# 🧠 ChromaDB setup
+chroma_client = chromadb.Client()
+collection = chroma_client.get_or_create_collection(name="rag_collection")
+
+
+# 🔍 Retrieve context
+def retrieve_context(query, k=3):
     try:
-        # Step 1: Embed query
-        query_embedding = get_embeddings([query])[0]
+        results = collection.query(query_texts=[query], n_results=k)
 
-        # Step 2: Retrieve context
-        results = collection.query(
-            query_embeddings=[query_embedding],
-            n_results=5
-        )
+        # ✅ check if results exist
+        if not results or "documents" not in results:
+            return "No context found"
 
-        context = " ".join(results["documents"][0])
+        docs = results["documents"][0]
 
-        # Step 3: Prompt
+        # ✅ check if empty
+        if not docs:
+            return "No context available"
+
+        return "\n".join(docs)
+
+    except Exception as e:
+        print("CHROMA ERROR:", e)
+        return "No context"
+
+
+# 🤖 Generate answer
+def generate_answer(query):
+    try:
+        context = retrieve_context(query)
+
         prompt = f"""
-You are a highly intelligent AI assistant.
-
-Answer the question in a detailed and structured way.
+You are a helpful AI assistant.
 
 Context:
 {context}
@@ -47,34 +67,23 @@ Context:
 Question:
 {query}
 
-Instructions:
-- Give a detailed explanation
-- Use bullet points if helpful
-- Do not give short answers
+Answer:
 """
 
-        # Step 4: Call Ollama
-        response = requests.post(
-            OLLAMA_URL,
-            json={
-                "model": "mistral",
-                "prompt": prompt,
-                "stream": False,
-                "options": {
-                    "temperature": 0.7,
-                    "top_p": 0.9,
-                    "num_predict": 500
-                }
-            },
-            timeout=60
-        )
+        inputs = tokenizer(prompt, return_tensors="pt")
 
-        print("OLLAMA RESPONSE:", response.text)  # debug
+        # 🔥 add no_grad (VERY IMPORTANT for speed)
+        with torch.no_grad():
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=50,   # reduce more
+                temperature=0.7
+            )
 
-        try:
-            return response.json().get("response", "No response")
-        except:
-            return f"Invalid JSON from Ollama: {response.text}"
+        response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+        return response
 
     except Exception as e:
-        return f"Error in RAG pipeline: {str(e)}"
+        print("ERROR IN GENERATE:", e)
+        return f"Error: {str(e)}"

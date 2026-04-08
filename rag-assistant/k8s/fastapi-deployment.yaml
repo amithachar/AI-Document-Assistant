@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: rag-fastapi
+  labels:
+    app: rag-fastapi
 spec:
   replicas: 1
   selector:
@@ -14,20 +16,19 @@ spec:
     spec:
       containers:
       - name: fastapi
-        image: amithachar/rag-assistant:latest
-        imagePullPolicy: Always
+        image: YOUR_DOCKER_IMAGE   # 🔴 replace this
+
         ports:
-        - containerPort: 8000
+          - containerPort: 8000
+
+        env:
+          - name: QWEN_API_URL
+            value: "http://qwen-service:8000/v1/chat/completions"
+
         resources:
           requests:
-            cpu: "200m"
-            memory: "256Mi"
+            cpu: "1"
+            memory: "2Gi"
           limits:
-            cpu: "500m"
-            memory: "512Mi"
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 8000
-          initialDelaySeconds: 10
-          periodSeconds: 5
+            cpu: "2"
+            memory: "4Gi"

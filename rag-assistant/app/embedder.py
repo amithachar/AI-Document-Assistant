@@ -1,14 +1,6 @@
-import requests
-import os
+from sentence_transformers import SentenceTransformer
 
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama-service:11434/api/embeddings")
+model = SentenceTransformer('all-MiniLM-L6-v2')
 
-def get_embeddings(texts):
-    embeddings = []
-    for text in texts:
-        res = requests.post(
-            OLLAMA_URL,
-            json={"model": "mistral", "prompt": text}
-        )
-        embeddings.append(res.json()["embedding"])
-    return embeddings
+def get_embedding(text):
+    return model.encode(text).tolist()
