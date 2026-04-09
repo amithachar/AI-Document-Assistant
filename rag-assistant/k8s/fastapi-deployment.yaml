@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: rag-fastapi
-  labels:
-    app: rag-fastapi
 spec:
   replicas: 1
   selector:
@@ -15,20 +13,23 @@ spec:
         app: rag-fastapi
     spec:
       containers:
-      - name: fastapi
-        image: YOUR_DOCKER_IMAGE   # 🔴 replace this
-
-        ports:
-          - containerPort: 8000
-
-        env:
-          - name: QWEN_API_URL
-            value: "http://qwen-service:8000/v1/chat/completions"
-
-        resources:
-          requests:
-            cpu: "1"
-            memory: "2Gi"
-          limits:
-            cpu: "2"
-            memory: "4Gi"
+        - name: fastapi
+          image: your-dockerhub/rag-assistant:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: OLLAMA_URL
+              value: "http://ollama:11434"
+            - name: CHROMA_PATH
+              value: "/data/chroma"
+          volumeMounts:
+            - name: chroma-storage
+              mountPath: /data
+          resources:
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+      volumes:
+        - name: chroma-storage
+          persistentVolumeClaim:
+            claimName: chroma-pvc

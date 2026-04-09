@@ -1,15 +1,29 @@
-import chromadb
-from app.embedder import get_embedding
+from langchain.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores import Chroma
+from langchain.embeddings import HuggingFaceEmbeddings
 
-chroma_client = chromadb.Client()
-collection = chroma_client.get_or_create_collection(name="rag_collection")
+CHROMA_PATH = "/data/chroma"
 
+def ingest(file_path):
+    loader = PyPDFLoader(file_path)
+    documents = loader.load()
 
-def ingest_documents(docs):
-    for i, doc in enumerate(docs):
-        embedding = get_embedding(doc)
-        collection.add(
-            documents=[doc],
-            embeddings=[embedding],
-            ids=[str(i)]
-        )
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=500,
+        chunk_overlap=50
+    )
+
+    docs = splitter.split_documents(documents)
+
+    embedding = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
+
+    db = Chroma.from_documents(
+        docs,
+        embedding,
+        persist_directory=CHROMA_PATH
+    )
+
+    db.persist()
